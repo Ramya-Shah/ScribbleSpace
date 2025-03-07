@@ -40,10 +40,35 @@ const Game: React.FC = () => {
   const [isDrawer, setIsDrawer] = useState(false);
   const [gameEnded, setGameEnded] = useState(false);
   const [winners, setWinners] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingRetries, setLoadingRetries] = useState(0);
 
   // Set up socket event listeners
   useEffect(() => {
     if (!socket || !connected || !roomId) return;
+
+    // Request initial room data when connecting
+    requestRoomData();
+
+    // Add listener for room data response
+    socket.on('room-data', (roomData) => {
+      if (roomData.players) {
+        setPlayers(roomData.players);
+        setLoading(false);
+      }
+      
+      if (roomData.isPlaying) {
+        setGameState(prev => ({
+          ...prev,
+          isPlaying: roomData.isPlaying,
+          currentDrawer: roomData.currentDrawer,
+          round: roomData.round,
+          maxRounds: roomData.maxRounds,
+          timeLeft: roomData.timeLeft
+        }));
+        setIsDrawer(socket.id === roomData.currentDrawer);
+      }
+    });
 
     // Player joined
     socket.on('player-joined', ({ players: newPlayers }) => {
@@ -124,6 +149,7 @@ const Game: React.FC = () => {
     });
 
     return () => {
+      socket.off('room-data');
       socket.off('player-joined');
       socket.off('player-left');
       socket.off('game-started');
@@ -136,6 +162,23 @@ const Game: React.FC = () => {
       socket.off('game-end');
     };
   }, [socket, connected, roomId]);
+
+  // Add function to request room data
+  const requestRoomData = () => {
+    if (socket && roomId) {
+      console.log('Requesting room data from server...');
+      socket.emit('request-room-data', roomId);
+      setLoadingRetries(prev => prev + 1);
+    }
+  };
+
+  // Add effect to retry loading if stuck
+  useEffect(() => {
+    if (loading && players.length === 0 && loadingRetries < 3) {
+      const retryTimeout = setTimeout(requestRoomData, 5000); // Retry after 5 seconds
+      return () => clearTimeout(retryTimeout);
+    }
+  }, [loading, players, loadingRetries]);
 
   const handleStartGame = () => {
     if (socket && roomId) {
@@ -223,10 +266,30 @@ const Game: React.FC = () => {
       <div className="container mx-auto flex flex-col md:flex-row flex-1 p-4 gap-4">
         {/* Left sidebar - Players */}
         <div className="w-full md:w-64 bg-white rounded-lg shadow-md overflow-hidden">
-          <PlayerList 
-            players={players} 
-            currentDrawer={gameState.currentDrawer} 
-          />
+          {players.length > 0 ? (
+            <PlayerList 
+              players={players} 
+              currentDrawer={gameState.currentDrawer} 
+            />
+          ) : (
+            <div className="p-4 text-center text-gray-500">
+              <div className="animate-pulse flex flex-col items-center justify-center h-40">
+                <div className="h-8 w-8 mb-4 rounded-full border-4 border-t-indigo-500 border-r-indigo-500 border-b-transparent border-l-transparent animate-spin"></div>
+                <p>Loading players...</p>
+                {loadingRetries > 0 && (
+                  <p className="mt-2 text-sm">Retrying... ({loadingRetries})</p>
+                )}
+                {loadingRetries >= 3 && (
+                  <button 
+                    onClick={requestRoomData} 
+                    className="mt-3 px-3 py-1 bg-indigo-500 text-white rounded-md text-sm hover:bg-indigo-600"
+                  >
+                    Refresh Data
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Main content - Canvas and controls */}

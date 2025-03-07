@@ -199,6 +199,24 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Add this event handler in the socket.io connection block
+  socket.on('request-room-data', (roomId) => {
+    if (!rooms[roomId]) {
+      socket.emit('room-data', { error: 'Room not found' });
+      return;
+    }
+    
+    // Send current room data to the requesting client
+    socket.emit('room-data', {
+      players: rooms[roomId].players,
+      isPlaying: rooms[roomId].isPlaying,
+      currentDrawer: rooms[roomId].currentDrawer,
+      round: rooms[roomId].round,
+      maxRounds: rooms[roomId].maxRounds,
+      timeLeft: rooms[roomId].timeLeft
+    });
+  });
+
   // Disconnect
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
