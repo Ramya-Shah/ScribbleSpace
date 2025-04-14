@@ -46,7 +46,7 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket }) => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [currentColor, currentSize]);
+  }, []);
 
   // Handle socket drawing events
   useEffect(() => {
