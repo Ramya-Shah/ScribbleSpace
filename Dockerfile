@@ -1,5 +1,5 @@
 # Using Node.js LTS version
-FROM node:20
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -16,11 +16,14 @@ RUN pnpm install
 # Copy all files
 COPY . .
 
+# Check code formatting
+RUN pnpm format:check
+
 # Build the React application
 RUN pnpm build
 
 # Expose the port that the server runs on
 EXPOSE 3001
 
-# Command to start the server
-CMD ["node", "server/index.js"]
+# Command to start the server (only after build is successful)
+CMD ["sh", "-c", "ls -la dist && node server/index.js"]

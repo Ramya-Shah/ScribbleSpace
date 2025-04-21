@@ -5,6 +5,13 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get the directory name correctly in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 dotenv.config();
 // Initialize Express app
 const app = express();
@@ -19,6 +26,9 @@ const io = new Server(server, {
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static frontend files from the dist directory
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // MongoDB connection (uncomment and update with your MongoDB URI)
 mongoose.connect(process.env.MONGODB_URL)
@@ -338,8 +348,14 @@ function endGame(roomId) {
   });
 }
 
+// Add a catchall route to serve the frontend for client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
 // Start server
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Frontend available at http://localhost:${PORT}`);
 });
