@@ -235,7 +235,7 @@ const Game: React.FC = () => {
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center">
             <PenTool className="h-6 w-6 text-indigo-600 mr-2" />
-            <h1 className="text-xl font-bold text-gray-800">Skribbl Clone</h1>
+            <h1 className="text-xl font-bold text-gray-800"> ScribblSpace</h1>
           </div>
           
           <div className="flex items-center space-x-4">

@@ -60,7 +60,7 @@ const Home: React.FC = () => {
       <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
         <div className="flex items-center justify-center mb-8">
           <PenTool className="h-10 w-10 text-indigo-600 mr-3" />
-          <h1 className="text-3xl font-bold text-gray-800">Skribbl Clone</h1>
+          <h1 className="text-3xl font-bold text-gray-800">ScribblSpace</h1>
         </div>
         
         {error && (
@@ -111,7 +111,7 @@ const Home: React.FC = () => {
         </div>
         
         <div className="text-center text-sm text-gray-500">
-          <p>Draw and guess with friends in this Skribbl.io clone!</p>
+          <p>Draw and guess with friends in ScribblSpace</p>
         </div>
       </div>
     </div>
