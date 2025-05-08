@@ -5,9 +5,10 @@ interface CanvasProps {
   roomId: string;
   isDrawer: boolean;
   socket: Socket | null;
+  lockScrollOnInteract?: boolean; // Add this line
 }
 
-const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket }) => {
+const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket, lockScrollOnInteract }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentColor, setCurrentColor] = useState('#000000');
@@ -169,6 +170,26 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket }) => {
     setIsDrawing(false);
     setPrevPos(null);
   };
+
+  // Prevent scroll on touch devices when interacting with the canvas
+  useEffect(() => {
+    if (!lockScrollOnInteract) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const preventScroll = (e: TouchEvent | WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    canvas.addEventListener('touchmove', preventScroll, { passive: false });
+    canvas.addEventListener('wheel', preventScroll, { passive: false });
+
+    return () => {
+      canvas.removeEventListener('touchmove', preventScroll);
+      canvas.removeEventListener('wheel', preventScroll);
+    };
+  }, [lockScrollOnInteract]);
 
   return (
     <div className="relative">

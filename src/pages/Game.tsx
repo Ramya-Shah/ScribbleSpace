@@ -307,7 +307,12 @@ const Game: React.FC = () => {
               </div>
             )}
 
-            <Canvas roomId={roomId || ''} isDrawer={isDrawer} socket={socket} />
+            <Canvas
+              roomId={roomId || ''}
+              isDrawer={isDrawer}
+              socket={socket}
+              lockScrollOnInteract
+            />
 
             {isDrawer && <GameControls roomId={roomId || ''} socket={socket} />}
           </div>
