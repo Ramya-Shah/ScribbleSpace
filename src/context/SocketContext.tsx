@@ -19,8 +19,8 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     // Connect to the server
-    // const newSocket = io('https://scribblspace.duckdns.org/');
-    const newSocket = io('http://localhost:3001/');
+    const newSocket = io('https://scribblspace.duckdns.org/');
+    // const newSocket = io('http://localhost:3001/');
 
     newSocket.on('connect', () => {
       console.log('Connected to server');
