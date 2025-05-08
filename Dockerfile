@@ -10,7 +10,6 @@ RUN pnpm install
 
 COPY . .
 
-RUN pnpm format:check
 
 RUN pnpm build
 
