@@ -16,4 +16,4 @@ RUN pnpm build
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "ls -la dist && node server/index.js"]
+CMD ["sh", "-c", "cd server && node index.js"]
