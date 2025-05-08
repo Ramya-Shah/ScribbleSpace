@@ -99,7 +99,9 @@ io.on('connection', socket => {
   console.log('User connected:', socket.id);
 
   // Create a new room
-  socket.on('create-room', callback => {
+  socket.on('create-room', callback => 
+    
+    {
     const roomId = createRoom();
     callback(roomId);
   });
