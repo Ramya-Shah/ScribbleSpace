@@ -34,8 +34,7 @@ app.use(express.static(path.join(__dirname, '../dist')));
 mongoose
   .connect(process.env.MONGODB_URL)
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => 
-    console.error('MongoDB connection error:', err));
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Game state
 const rooms = {};
@@ -99,9 +98,7 @@ io.on('connection', socket => {
   console.log('User connected:', socket.id);
 
   // Create a new room
-  socket.on('create-room', callback => 
-    
-    {
+  socket.on('create-room', callback => {
     const roomId = createRoom();
     callback(roomId);
   });
