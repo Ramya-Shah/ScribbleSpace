@@ -19,7 +19,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     // Connect to the server
-    const newSocket = io('https://ec2-3-110-49-50.ap-south-1.compute.amazonaws.com');
+    const newSocket = io('https://scribblspace.duckdns.org/');
 
     newSocket.on('connect', () => {
       console.log('Connected to server');
