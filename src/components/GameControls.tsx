@@ -11,7 +11,7 @@ const GameControls: React.FC<GameControlsProps> = ({ roomId, socket }) => {
   const handleClearCanvas = () => {
     if (socket) {
       socket.emit('clear-canvas', roomId);
-      
+
       // Also clear local canvas
       const canvas = document.querySelector('canvas');
       if (canvas) {

@@ -24,15 +24,13 @@ const PlayerList: React.FC<PlayerListProps> = ({ players, currentDrawer }) => {
           <h2 className="font-semibold">Players ({players.length})</h2>
         </div>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto">
         {sortedPlayers.length === 0 ? (
-          <div className="text-gray-500 text-center py-4">
-            No players yet
-          </div>
+          <div className="text-gray-500 text-center py-4">No players yet</div>
         ) : (
           <ul className="divide-y divide-gray-200">
-            {sortedPlayers.map((player) => (
+            {sortedPlayers.map(player => (
               <li key={player.id} className="p-3 flex items-center justify-between">
                 <div className="flex items-center">
                   {player.id === currentDrawer && (

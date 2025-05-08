@@ -62,13 +62,13 @@ const Home: React.FC = () => {
           <PenTool className="h-10 w-10 text-indigo-600 mr-3" />
           <h1 className="text-3xl font-bold text-gray-800">ScribblSpace</h1>
         </div>
-        
+
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
-        
+
         <div className="mb-6">
           <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
             Username
@@ -77,12 +77,12 @@ const Home: React.FC = () => {
             type="text"
             id="username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="Enter your username"
           />
         </div>
-        
+
         <div className="grid grid-cols-1 gap-4 mb-6">
           <button
             onClick={handleCreateRoom}
@@ -90,14 +90,14 @@ const Home: React.FC = () => {
           >
             Create New Room
           </button>
-          
+
           <div className="text-center text-gray-500">or</div>
-          
+
           <div className="flex space-x-2">
             <input
               type="text"
               value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
+              onChange={e => setRoomId(e.target.value)}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Enter Room ID"
             />
@@ -109,7 +109,7 @@ const Home: React.FC = () => {
             </button>
           </div>
         </div>
-        
+
         <div className="text-center text-sm text-gray-500">
           <p>Draw and guess with friends in ScribblSpace</p>
         </div>

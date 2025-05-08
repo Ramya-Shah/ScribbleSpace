@@ -8,7 +8,7 @@ interface SocketContextType {
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
-  connected: false
+  connected: false,
 });
 
 export const useSocket = () => useContext(SocketContext);
@@ -20,7 +20,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     // Connect to the server
     const newSocket = io('http://localhost:3001');
-    
+
     newSocket.on('connect', () => {
       console.log('Connected to server');
       setConnected(true);
@@ -39,9 +39,5 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
-  return (
-    <SocketContext.Provider value={{ socket, connected }}>
-      {children}
-    </SocketContext.Provider>
-  );
+  return <SocketContext.Provider value={{ socket, connected }}>{children}</SocketContext.Provider>;
 };

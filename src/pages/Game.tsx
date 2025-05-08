@@ -26,7 +26,7 @@ const Game: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const { socket, connected } = useSocket();
   const navigate = useNavigate();
-  
+
   const [players, setPlayers] = useState<Player[]>([]);
   const [gameState, setGameState] = useState<GameState>({
     isPlaying: false,
@@ -34,7 +34,7 @@ const Game: React.FC = () => {
     word: null,
     round: 0,
     maxRounds: 3,
-    timeLeft: 60
+    timeLeft: 60,
   });
   const [messages, setMessages] = useState<any[]>([]);
   const [isDrawer, setIsDrawer] = useState(false);
@@ -51,12 +51,12 @@ const Game: React.FC = () => {
     requestRoomData();
 
     // Add listener for room data response
-    socket.on('room-data', (roomData) => {
+    socket.on('room-data', roomData => {
       if (roomData.players) {
         setPlayers(roomData.players);
         setLoading(false);
       }
-      
+
       if (roomData.isPlaying) {
         setGameState(prev => ({
           ...prev,
@@ -64,7 +64,7 @@ const Game: React.FC = () => {
           currentDrawer: roomData.currentDrawer,
           round: roomData.round,
           maxRounds: roomData.maxRounds,
-          timeLeft: roomData.timeLeft
+          timeLeft: roomData.timeLeft,
         }));
         setIsDrawer(socket.id === roomData.currentDrawer);
       }
@@ -87,23 +87,23 @@ const Game: React.FC = () => {
         isPlaying: true,
         currentDrawer,
         round,
-        maxRounds
+        maxRounds,
       }));
       setIsDrawer(socket.id === currentDrawer);
     });
 
     // Word to draw
-    socket.on('word-to-draw', (word) => {
+    socket.on('word-to-draw', word => {
       setGameState(prev => ({ ...prev, word }));
     });
 
     // Time update
-    socket.on('time-update', (timeLeft) => {
+    socket.on('time-update', timeLeft => {
       setGameState(prev => ({ ...prev, timeLeft }));
     });
 
     // Chat message
-    socket.on('chat-message', (message) => {
+    socket.on('chat-message', message => {
       setMessages(prev => [...prev, message]);
     });
 
@@ -116,7 +116,7 @@ const Game: React.FC = () => {
     socket.on('round-end', ({ word, players: updatedPlayers }) => {
       setMessages(prev => [
         ...prev,
-        { system: true, message: `Round ended! The word was: ${word}` }
+        { system: true, message: `Round ended! The word was: ${word}` },
       ]);
       setPlayers(updatedPlayers);
     });
@@ -128,13 +128,10 @@ const Game: React.FC = () => {
         currentDrawer,
         round,
         word: null,
-        timeLeft: 60
+        timeLeft: 60,
       }));
       setIsDrawer(socket.id === currentDrawer);
-      setMessages(prev => [
-        ...prev,
-        { system: true, message: `Round ${round} started!` }
-      ]);
+      setMessages(prev => [...prev, { system: true, message: `Round ${round} started!` }]);
     });
 
     // Game end
@@ -142,10 +139,7 @@ const Game: React.FC = () => {
       setGameState(prev => ({ ...prev, isPlaying: false }));
       setGameEnded(true);
       setWinners(sortedPlayers);
-      setMessages(prev => [
-        ...prev,
-        { system: true, message: 'Game ended!' }
-      ]);
+      setMessages(prev => [...prev, { system: true, message: 'Game ended!' }]);
     });
 
     return () => {
@@ -201,12 +195,15 @@ const Game: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center p-4">
         <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md">
           <h1 className="text-3xl font-bold text-center mb-6">Game Over!</h1>
-          
+
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Final Scores:</h2>
             <div className="space-y-2">
               {winners.map((player, index) => (
-                <div key={player.id} className="flex items-center justify-between p-2 bg-gray-100 rounded">
+                <div
+                  key={player.id}
+                  className="flex items-center justify-between p-2 bg-gray-100 rounded"
+                >
                   <div className="flex items-center">
                     <span className="font-bold mr-2">{index + 1}.</span>
                     <span>{player.username}</span>
@@ -216,7 +213,7 @@ const Game: React.FC = () => {
               ))}
             </div>
           </div>
-          
+
           <button
             onClick={handleLeaveRoom}
             className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-200"
@@ -237,7 +234,7 @@ const Game: React.FC = () => {
             <PenTool className="h-6 w-6 text-indigo-600 mr-2" />
             <h1 className="text-xl font-bold text-gray-800"> ScribblSpace</h1>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {gameState.isPlaying && (
               <div className="flex items-center bg-gray-100 px-3 py-1 rounded-full">
@@ -245,13 +242,13 @@ const Game: React.FC = () => {
                 <span className="font-medium">{gameState.timeLeft}s</span>
               </div>
             )}
-            
+
             {gameState.isPlaying && (
               <div className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full">
                 Round {gameState.round}/{gameState.maxRounds}
               </div>
             )}
-            
+
             <button
               onClick={handleLeaveRoom}
               className="flex items-center text-gray-600 hover:text-gray-900"
@@ -262,15 +259,12 @@ const Game: React.FC = () => {
           </div>
         </div>
       </header>
-      
+
       <div className="container mx-auto flex flex-col md:flex-row flex-1 p-4 gap-4">
         {/* Left sidebar - Players */}
         <div className="w-full md:w-64 bg-white rounded-lg shadow-md overflow-hidden">
           {players.length > 0 ? (
-            <PlayerList 
-              players={players} 
-              currentDrawer={gameState.currentDrawer} 
-            />
+            <PlayerList players={players} currentDrawer={gameState.currentDrawer} />
           ) : (
             <div className="p-4 text-center text-gray-500">
               <div className="animate-pulse flex flex-col items-center justify-center h-40">
@@ -280,8 +274,8 @@ const Game: React.FC = () => {
                   <p className="mt-2 text-sm">Retrying... ({loadingRetries})</p>
                 )}
                 {loadingRetries >= 3 && (
-                  <button 
-                    onClick={requestRoomData} 
+                  <button
+                    onClick={requestRoomData}
                     className="mt-3 px-3 py-1 bg-indigo-500 text-white rounded-md text-sm hover:bg-indigo-600"
                   >
                     Refresh Data
@@ -291,7 +285,7 @@ const Game: React.FC = () => {
             </div>
           )}
         </div>
-        
+
         {/* Main content - Canvas and controls */}
         <div className="flex-1 flex flex-col">
           <div className="bg-white rounded-lg shadow-md p-4 mb-4">
@@ -301,7 +295,7 @@ const Game: React.FC = () => {
                 <p className="text-xl font-bold">{gameState.word}</p>
               </div>
             )}
-            
+
             {!isDrawer && gameState.isPlaying && (
               <div className="bg-gray-100 px-4 py-2 rounded-md mb-4 text-center">
                 <p className="font-medium">
@@ -312,21 +306,12 @@ const Game: React.FC = () => {
                 </p>
               </div>
             )}
-            
-            <Canvas 
-              roomId={roomId || ''} 
-              isDrawer={isDrawer} 
-              socket={socket}
-            />
-            
-            {isDrawer && (
-              <GameControls 
-                roomId={roomId || ''} 
-                socket={socket}
-              />
-            )}
+
+            <Canvas roomId={roomId || ''} isDrawer={isDrawer} socket={socket} />
+
+            {isDrawer && <GameControls roomId={roomId || ''} socket={socket} />}
           </div>
-          
+
           {!gameState.isPlaying && players.length > 1 && (
             <button
               onClick={handleStartGame}
@@ -335,21 +320,18 @@ const Game: React.FC = () => {
               Start Game
             </button>
           )}
-          
+
           {!gameState.isPlaying && players.length < 2 && (
             <div className="bg-yellow-100 text-yellow-800 p-4 rounded-md mb-4 text-center">
-              Waiting for more players to join... Share the room code: <span className="font-bold">{roomId}</span>
+              Waiting for more players to join... Share the room code:{' '}
+              <span className="font-bold">{roomId}</span>
             </div>
           )}
         </div>
-        
+
         {/* Right sidebar - Chat */}
         <div className="w-full md:w-80 bg-white rounded-lg shadow-md overflow-hidden">
-          <ChatBox 
-            messages={messages} 
-            onSendMessage={handleSendMessage} 
-            disabled={isDrawer}
-          />
+          <ChatBox messages={messages} onSendMessage={handleSendMessage} disabled={isDrawer} />
         </div>
       </div>
     </div>

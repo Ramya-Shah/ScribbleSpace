@@ -18,9 +18,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
 });
 
 // Middleware
@@ -31,17 +31,44 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // MongoDB connection (uncomment and update with your MongoDB URI)
-mongoose.connect(process.env.MONGODB_URL)
+mongoose
+  .connect(process.env.MONGODB_URL)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Game state
 const rooms = {};
 const wordList = [
-  'apple', 'banana', 'cat', 'dog', 'elephant', 'flower', 'guitar', 'house',
-  'island', 'jacket', 'kite', 'lemon', 'mountain', 'notebook', 'ocean',
-  'pizza', 'queen', 'rainbow', 'sun', 'tree', 'umbrella', 'violin', 'window',
-  'xylophone', 'yacht', 'zebra', 'airplane', 'beach', 'castle', 'dolphin'
+  'apple',
+  'banana',
+  'cat',
+  'dog',
+  'elephant',
+  'flower',
+  'guitar',
+  'house',
+  'island',
+  'jacket',
+  'kite',
+  'lemon',
+  'mountain',
+  'notebook',
+  'ocean',
+  'pizza',
+  'queen',
+  'rainbow',
+  'sun',
+  'tree',
+  'umbrella',
+  'violin',
+  'window',
+  'xylophone',
+  'yacht',
+  'zebra',
+  'airplane',
+  'beach',
+  'castle',
+  'dolphin',
 ];
 
 // Helper functions
@@ -61,17 +88,17 @@ function createRoom() {
     scores: {},
     round: 0,
     maxRounds: 3,
-    timeLeft: 60
+    timeLeft: 60,
   };
   return roomId;
 }
 
 // Socket.io connection
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   console.log('User connected:', socket.id);
 
   // Create a new room
-  socket.on('create-room', (callback) => {
+  socket.on('create-room', callback => {
     const roomId = createRoom();
     callback(roomId);
   });
@@ -92,43 +119,43 @@ io.on('connection', (socket) => {
 
     // Notify room about new player
     io.to(roomId).emit('player-joined', { players: rooms[roomId].players });
-    
+
     // Send room data to the new player
-    callback({ 
-      success: true, 
-      room: rooms[roomId]
+    callback({
+      success: true,
+      room: rooms[roomId],
     });
 
     console.log(`${username} joined room ${roomId}`);
   });
 
   // Start game
-  socket.on('start-game', (roomId) => {
+  socket.on('start-game', roomId => {
     if (!rooms[roomId]) return;
-    
+
     const room = rooms[roomId];
     room.isPlaying = true;
     room.round = 1;
-    
+
     // Select first drawer
     room.currentDrawer = room.players[0].id;
     room.word = getRandomWord();
-    
+
     // Reset scores
     room.players.forEach(player => {
       room.scores[player.id] = 0;
     });
-    
+
     // Notify all players
     io.to(roomId).emit('game-started', {
       currentDrawer: room.currentDrawer,
       round: room.round,
-      maxRounds: room.maxRounds
+      maxRounds: room.maxRounds,
     });
-    
+
     // Send word to drawer
     io.to(room.currentDrawer).emit('word-to-draw', room.word);
-    
+
     // Start round timer
     startRoundTimer(roomId);
   });
@@ -136,26 +163,26 @@ io.on('connection', (socket) => {
   // Drawing
   socket.on('draw', ({ roomId, line }) => {
     if (!rooms[roomId]) return;
-    
+
     const room = rooms[roomId];
-    
+
     // Only allow current drawer to draw
     if (socket.id !== room.currentDrawer) return;
-    
+
     // Add to draw history and broadcast
     room.drawHistory.push(line);
     socket.to(roomId).emit('draw', line);
   });
 
   // Clear canvas
-  socket.on('clear-canvas', (roomId) => {
+  socket.on('clear-canvas', roomId => {
     if (!rooms[roomId]) return;
-    
+
     const room = rooms[roomId];
-    
+
     // Only allow current drawer to clear
     if (socket.id !== room.currentDrawer) return;
-    
+
     room.drawHistory = [];
     socket.to(roomId).emit('clear-canvas');
   });
@@ -163,39 +190,43 @@ io.on('connection', (socket) => {
   // Chat message / guess
   socket.on('chat-message', ({ roomId, message }) => {
     if (!rooms[roomId]) return;
-    
+
     const room = rooms[roomId];
     const player = room.players.find(p => p.id === socket.id);
-    
+
     if (!player) return;
-    
+
     // Check if message is correct guess
-    if (room.isPlaying && socket.id !== room.currentDrawer && message.toLowerCase() === room.word.toLowerCase()) {
+    if (
+      room.isPlaying &&
+      socket.id !== room.currentDrawer &&
+      message.toLowerCase() === room.word.toLowerCase()
+    ) {
       // Correct guess
       const timeLeft = room.timeLeft;
       const pointsEarned = Math.ceil(timeLeft / 2);
-      
+
       // Update score
       room.scores[socket.id] += pointsEarned;
-      
+
       // Update player score in players array
       const playerIndex = room.players.findIndex(p => p.id === socket.id);
       if (playerIndex !== -1) {
         room.players[playerIndex].score = room.scores[socket.id];
       }
-      
+
       // Notify all players about correct guess
       io.to(roomId).emit('correct-guess', {
         playerId: socket.id,
         username: player.username,
         scores: room.scores,
-        players: room.players
+        players: room.players,
       });
-      
+
       // Check if all players guessed correctly
       const nonDrawingPlayers = room.players.filter(p => p.id !== room.currentDrawer);
       const allGuessedCorrectly = nonDrawingPlayers.every(p => room.scores[p.id] > 0);
-      
+
       if (allGuessedCorrectly) {
         endRound(roomId);
       }
@@ -204,18 +235,18 @@ io.on('connection', (socket) => {
       io.to(roomId).emit('chat-message', {
         senderId: socket.id,
         username: player.username,
-        message
+        message,
       });
     }
   });
 
   // Add this event handler in the socket.io connection block
-  socket.on('request-room-data', (roomId) => {
+  socket.on('request-room-data', roomId => {
     if (!rooms[roomId]) {
       socket.emit('room-data', { error: 'Room not found' });
       return;
     }
-    
+
     // Send current room data to the requesting client
     socket.emit('room-data', {
       players: rooms[roomId].players,
@@ -223,37 +254,37 @@ io.on('connection', (socket) => {
       currentDrawer: rooms[roomId].currentDrawer,
       round: rooms[roomId].round,
       maxRounds: rooms[roomId].maxRounds,
-      timeLeft: rooms[roomId].timeLeft
+      timeLeft: rooms[roomId].timeLeft,
     });
   });
 
   // Disconnect
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
-    
+
     // Remove player from all rooms they were in
     Object.keys(rooms).forEach(roomId => {
       const room = rooms[roomId];
       const playerIndex = room.players.findIndex(p => p.id === socket.id);
-      
+
       if (playerIndex !== -1) {
         room.players.splice(playerIndex, 1);
-        
+
         // If room is empty, delete it
         if (room.players.length === 0) {
           delete rooms[roomId];
           return;
         }
-        
+
         // If current drawer left, end round
         if (room.currentDrawer === socket.id) {
           endRound(roomId);
         }
-        
+
         // Notify remaining players
         io.to(roomId).emit('player-left', {
           playerId: socket.id,
-          players: room.players
+          players: room.players,
         });
       }
     });
@@ -264,15 +295,15 @@ io.on('connection', (socket) => {
 function startRoundTimer(roomId) {
   const room = rooms[roomId];
   if (!room) return;
-  
+
   room.timeLeft = 60;
-  
+
   const timer = setInterval(() => {
     room.timeLeft -= 1;
-    
+
     // Emit time update
     io.to(roomId).emit('time-update', room.timeLeft);
-    
+
     // End round if time is up
     if (room.timeLeft <= 0) {
       clearInterval(timer);
@@ -285,18 +316,18 @@ function startRoundTimer(roomId) {
 function endRound(roomId) {
   const room = rooms[roomId];
   if (!room) return;
-  
+
   // Reveal word to all
   io.to(roomId).emit('round-end', {
     word: room.word,
     scores: room.scores,
-    players: room.players
+    players: room.players,
   });
-  
+
   // Clear canvas
   room.drawHistory = [];
   io.to(roomId).emit('clear-canvas');
-  
+
   // Wait before starting next round
   setTimeout(() => {
     // Check if game should end
@@ -304,28 +335,28 @@ function endRound(roomId) {
       endGame(roomId);
       return;
     }
-    
+
     // Start next round
     room.round += 1;
-    
+
     // Select next drawer
     const currentDrawerIndex = room.players.findIndex(p => p.id === room.currentDrawer);
     const nextDrawerIndex = (currentDrawerIndex + 1) % room.players.length;
     room.currentDrawer = room.players[nextDrawerIndex].id;
-    
+
     // Select new word
     room.word = getRandomWord();
-    
+
     // Notify all players
     io.to(roomId).emit('new-round', {
       currentDrawer: room.currentDrawer,
       round: room.round,
-      maxRounds: room.maxRounds
+      maxRounds: room.maxRounds,
     });
-    
+
     // Send word to drawer
     io.to(room.currentDrawer).emit('word-to-draw', room.word);
-    
+
     // Start round timer
     startRoundTimer(roomId);
   }, 5000);
@@ -335,16 +366,16 @@ function endRound(roomId) {
 function endGame(roomId) {
   const room = rooms[roomId];
   if (!room) return;
-  
+
   room.isPlaying = false;
-  
+
   // Sort players by score
   const sortedPlayers = [...room.players].sort((a, b) => room.scores[b.id] - room.scores[a.id]);
-  
+
   // Notify all players
   io.to(roomId).emit('game-end', {
     players: sortedPlayers,
-    scores: room.scores
+    scores: room.scores,
   });
 }
 

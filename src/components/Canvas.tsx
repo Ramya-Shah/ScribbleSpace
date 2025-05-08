@@ -12,7 +12,7 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentColor, setCurrentColor] = useState('#000000');
   const [currentSize, setCurrentSize] = useState(5);
-  const [prevPos, setPrevPos] = useState<{ x: number, y: number } | null>(null);
+  const [prevPos, setPrevPos] = useState<{ x: number; y: number } | null>(null);
 
   // Initialize canvas
   useEffect(() => {
@@ -53,7 +53,7 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket }) => {
     if (!socket || !canvasRef.current) return;
 
     // Listen for draw events
-    socket.on('draw', (line) => {
+    socket.on('draw', line => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -86,7 +86,9 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket }) => {
   }, [socket]);
 
   // Drawing handlers
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const startDrawing = (
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) => {
     if (!isDrawer) return;
 
     const canvas = canvasRef.current;
@@ -155,8 +157,8 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket }) => {
           from: prevPos,
           to: { x, y },
           color: currentColor,
-          size: currentSize
-        }
+          size: currentSize,
+        },
       });
     }
 
@@ -181,19 +183,19 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket }) => {
         onTouchMove={draw}
         onTouchEnd={endDrawing}
       />
-      
+
       {isDrawer && (
         <div className="absolute bottom-2 left-2 flex space-x-2">
           <input
             type="color"
             value={currentColor}
-            onChange={(e) => setCurrentColor(e.target.value)}
+            onChange={e => setCurrentColor(e.target.value)}
             className="w-8 h-8 cursor-pointer"
           />
-          
+
           <select
             value={currentSize}
-            onChange={(e) => setCurrentSize(Number(e.target.value))}
+            onChange={e => setCurrentSize(Number(e.target.value))}
             className="bg-white border border-gray-300 rounded px-2 py-1 text-sm"
           >
             <option value="2">Small</option>
