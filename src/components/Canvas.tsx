@@ -102,6 +102,7 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket, lockScrollOnI
 
     if ('touches' in e) {
       // Touch event
+      e.preventDefault(); // Prevent scrolling on touch devices
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
     } else {
@@ -179,7 +180,7 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket, lockScrollOnI
 
     const preventScroll = (e: TouchEvent | WheelEvent) => {
       e.preventDefault();
-      e.stopPropagation();
+    //   e.stopPropagation();
     };
 
     canvas.addEventListener('touchmove', preventScroll, { passive: false });
