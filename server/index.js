@@ -30,12 +30,6 @@ app.use(express.json());
 // Serve static frontend files from the dist directory
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// MongoDB connection (uncomment and update with your MongoDB URI)
-mongoose
-  .connect(process.env.MONGODB_URL)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
 // Game state
 const rooms = {};
 const wordList = [
