@@ -71,7 +71,9 @@ function getRandomWord() {
 }
 
 function createRoom() {
-  const roomId = uuidv4().substring(0, 6);
+  // Generate a 6-digit numeric room ID
+  const roomId = Math.floor(100000 + Math.random() * 900000).toString();
+  
   rooms[roomId] = {
     id: roomId,
     players: [],
