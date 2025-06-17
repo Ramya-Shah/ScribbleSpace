@@ -102,7 +102,9 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket, lockScrollOnI
 
     if ('touches' in e) {
       // Touch event
-      e.preventDefault(); // Prevent scrolling on touch devices
+      if (lockScrollOnInteract) {
+        e.preventDefault(); // Only prevent scrolling if lockScrollOnInteract is true
+      }
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
     } else {
@@ -131,9 +133,11 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket, lockScrollOnI
 
     if ('touches' in e) {
       // Touch event
+      if (lockScrollOnInteract) {
+        e.preventDefault(); // Only prevent scrolling if lockScrollOnInteract is true
+      }
       clientX = e.touches[0].clientX;
       clientY = e.touches[0].clientY;
-      e.preventDefault(); // Prevent scrolling on touch devices
     } else {
       // Mouse event
       clientX = e.clientX;
@@ -174,23 +178,22 @@ const Canvas: React.FC<CanvasProps> = ({ roomId, isDrawer, socket, lockScrollOnI
 
   // Prevent scroll on touch devices when interacting with the canvas
   useEffect(() => {
-    if (!lockScrollOnInteract) return;
     const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const preventScroll = (e: TouchEvent | WheelEvent) => {
-      e.preventDefault();
-    //   e.stopPropagation();
+    if (!canvas || !lockScrollOnInteract) return;
+    
+    const preventTouchMove = (e: TouchEvent) => {
+      if (isDrawing && isDrawer) {
+        e.preventDefault();
+      }
     };
-
-    canvas.addEventListener('touchmove', preventScroll, { passive: false });
-    canvas.addEventListener('wheel', preventScroll, { passive: false });
-
+    
+    // Add the non-passive event listener to prevent scrolling during drawing
+    canvas.addEventListener('touchmove', preventTouchMove, { passive: false });
+    
     return () => {
-      canvas.removeEventListener('touchmove', preventScroll);
-      canvas.removeEventListener('wheel', preventScroll);
+      canvas.removeEventListener('touchmove', preventTouchMove);
     };
-  }, [lockScrollOnInteract]);
+  }, [isDrawing, isDrawer, lockScrollOnInteract]);
 
   return (
     <div className="relative">
