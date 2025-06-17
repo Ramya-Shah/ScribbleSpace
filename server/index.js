@@ -332,29 +332,45 @@ function endRound(roomId) {
       return;
     }
 
+    // Make sure we still have players in the room
+    if (room.players.length === 0) {
+      // No players left, end the game
+      delete rooms[roomId];
+      return;
+    }
+
     // Start next round
     room.round += 1;
 
-    // Select next drawer
-    const currentDrawerIndex = room.players.findIndex(p => p.id === room.currentDrawer);
-    const nextDrawerIndex = (currentDrawerIndex + 1) % room.players.length;
-    room.currentDrawer = room.players[nextDrawerIndex].id;
+    // Select next drawer (with safety check)
+    if (room.players.length > 0) {
+      const currentDrawerIndex = room.players.findIndex(p => p.id === room.currentDrawer);
+      // If current drawer not found or is last player, start from beginning
+      const nextDrawerIndex = (currentDrawerIndex >= 0 && currentDrawerIndex < room.players.length - 1) 
+        ? currentDrawerIndex + 1 
+        : 0;
+      
+      room.currentDrawer = room.players[nextDrawerIndex].id;
 
-    // Select new word
-    room.word = getRandomWord();
+      // Select new word
+      room.word = getRandomWord();
 
-    // Notify all players
-    io.to(roomId).emit('new-round', {
-      currentDrawer: room.currentDrawer,
-      round: room.round,
-      maxRounds: room.maxRounds,
-    });
+      // Notify all players
+      io.to(roomId).emit('new-round', {
+        currentDrawer: room.currentDrawer,
+        round: room.round,
+        maxRounds: room.maxRounds,
+      });
 
-    // Send word to drawer
-    io.to(room.currentDrawer).emit('word-to-draw', room.word);
+      // Send word to drawer
+      io.to(room.currentDrawer).emit('word-to-draw', room.word);
 
-    // Start round timer
-    startRoundTimer(roomId);
+      // Start round timer
+      startRoundTimer(roomId);
+    } else {
+      // No players left, end the game
+      delete rooms[roomId];
+    }
   }, 5000);
 }
 
